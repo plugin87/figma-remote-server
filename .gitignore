@@ -3,5 +3,5 @@ dist/
 dist-cloud/
 *.tsbuildinfo
 .env
-.env.*
+!.env.example
 .wrangler/

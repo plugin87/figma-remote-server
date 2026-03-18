@@ -40,11 +40,35 @@ MCP (Model Context Protocol) server that connects AI assistants (Claude Desktop,
 
 ## Quick Start
 
-### 1. Get a Figma Token
+### Step 1: Clone & Install
 
-Figma → Settings → Security → Personal Access Tokens → Generate
+```bash
+git clone https://github.com/plugin87/figma-remote-server.git
+cd figma-remote-server
+npm install
+npm run build
+```
 
-### 2. Configure Claude Desktop
+### Step 2: Get a Figma Token
+
+1. Go to [Figma](https://www.figma.com) → **Settings** → **Security**
+2. Click **Personal Access Tokens** → **Generate new token**
+3. Name it anything (e.g. `design-lazyyy`)
+4. Copy the token (starts with `figd_...`)
+
+### Step 3: Set up your token
+
+```bash
+cp .env.example .env
+```
+
+Open `.env` and replace `figd_your_token_here` with your actual token:
+
+```
+FIGMA_ACCESS_TOKEN=figd_your_actual_token_here
+```
+
+### Step 4: Connect to Claude Desktop
 
 Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
 
@@ -53,32 +77,59 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
   "mcpServers": {
     "design-lazyyy-figma": {
       "command": "node",
-      "args": ["<path-to>/figma-console-mcp/dist/local.js"],
+      "args": ["/full/path/to/figma-remote-server/dist/local.js"],
       "env": {
-        "FIGMA_ACCESS_TOKEN": "your-token-here"
+        "FIGMA_ACCESS_TOKEN": "figd_your_actual_token_here"
       }
     }
   }
 }
 ```
 
-### 3. Restart Claude Desktop
+> **Tip**: Replace `/full/path/to/` with the actual path where you cloned the repo.
+> To find it, run `pwd` in the project folder.
 
-### 4. Try it
+> **Node version issue?** If you get errors, use the full path to Node 20+:
+> `"command": "/Users/yourname/.nvm/versions/node/v20.x.x/bin/node"`
+
+### Step 5: Restart Claude Desktop
+
+Quit Claude Desktop completely (Cmd+Q) and reopen it.
+
+### Step 6: Test it
+
+Open a new chat in Claude Desktop and type:
 
 ```
-"Check Figma status"
-"Get design tokens as CSS from https://www.figma.com/design/xxxxx/MyFile"
-"Lint accessibility of this file: https://www.figma.com/design/xxxxx/MyApp"
+Check Figma status
 ```
 
-### 5. Enable Write Operations (Optional)
+If you see `Connected` with your Figma username — you're all set!
 
-1. Open Figma Desktop
-2. Plugins → Development → Import plugin from manifest
-3. Select `design-lazyyy-remote-server/manifest.json`
-4. Run the plugin — wait for "Connected"
-5. Now you can create/edit nodes, variables, and more via Claude
+Now try:
+
+```
+Get design tokens as CSS from https://www.figma.com/design/xxxxx/MyFile
+```
+
+```
+Lint accessibility of this file: https://www.figma.com/design/xxxxx/MyApp
+```
+
+### Step 7: Enable Write Operations (Optional)
+
+Write tools (create nodes, edit text, manage variables) need the Figma Desktop plugin:
+
+1. Open **Figma Desktop App** (not the browser)
+2. Open any Figma file
+3. Go to **Main Menu → Plugins → Development → Import plugin from manifest...**
+4. Navigate to the cloned repo and select: `design-lazyyy-remote-server/manifest.json`
+5. Run the plugin: **Plugins → Development → Design Lazyyy Remote Server**
+6. Wait until the plugin window shows **Connected**
+
+Done! Now you can create/edit nodes, variables, and more via Claude.
+
+> See [how-to-use.md](./how-to-use.md) for all 5 connection methods (Claude Desktop, CLI, Cursor, Browser, Cloud)
 
 ---
 
