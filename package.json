@@ -1,0 +1,35 @@
+{
+  "name": "@design-lazyyy/figma-mcp",
+  "version": "1.0.0",
+  "description": "Design Lazyyy — Figma MCP Server for AI-powered design system analysis, token extraction, and read/write operations",
+  "author": "Design Lazyyy",
+  "license": "MIT",
+  "type": "module",
+  "main": "dist/local.js",
+  "bin": {
+    "design-lazyyy-figma": "dist/local.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "build:local": "tsc -p tsconfig.json",
+    "start": "node dist/local.js",
+    "dev": "tsc --watch",
+    "lint": "biome check src/",
+    "format": "biome format --write src/"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.27.1",
+    "pino": "^9.6.0",
+    "ws": "^8.18.0",
+    "zod": "^3.24.0"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.0",
+    "typescript": "^5.7.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

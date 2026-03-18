@@ -1,0 +1,8 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./dist-cloud",
+    "types": ["@cloudflare/workers-types"]
+  },
+  "include": ["src/index.ts", "src/core/**/*", "src/connectors/cloud-*.ts"]
+}

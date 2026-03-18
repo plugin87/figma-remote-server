@@ -1,0 +1,41 @@
+{
+  "name": "design-lazyyy-figma",
+  "main": "dist/index.js",
+  "compatibility_date": "2024-12-01",
+  "node_compat": true,
+
+  // KV Namespaces for token storage
+  "kv_namespaces": [
+    {
+      "binding": "OAUTH_KV",
+      "id": "YOUR_KV_NAMESPACE_ID"
+    }
+  ],
+
+  // Durable Objects for WebSocket relay
+  "durable_objects": {
+    "bindings": [
+      {
+        "name": "PLUGIN_RELAY",
+        "class_name": "PluginRelayDO"
+      }
+    ]
+  },
+
+  // Migrations for Durable Objects
+  "migrations": [
+    {
+      "tag": "v1",
+      "new_classes": ["PluginRelayDO"]
+    }
+  ],
+
+  // Environment variables (set via wrangler secret)
+  // FIGMA_CLIENT_ID
+  // FIGMA_CLIENT_SECRET
+  // SESSION_SECRET
+
+  "vars": {
+    "FIGMA_API_BASE": "https://api.figma.com"
+  }
+}

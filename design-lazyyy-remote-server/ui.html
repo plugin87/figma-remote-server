@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+      * { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: 'Space Mono', monospace;
+        font-size: 12px;
+        background: #0a0a0a;
+        color: #e0e0e0;
+        padding: 0;
+        overflow: hidden;
+        height: 100vh;
+      }
+      .container {
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #222;
+      }
+      .header {
+        padding: 12px 14px 10px;
+        border-bottom: 1px solid #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: linear-gradient(180deg, #111 0%, #0a0a0a 100%);
+      }
+      .avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: 2px solid #333;
+      }
+      .brand {
+        flex: 1;
+      }
+      .brand-name {
+        font-size: 13px;
+        font-weight: 700;
+        color: #fff;
+        letter-spacing: -0.3px;
+      }
+      .brand-sub {
+        font-size: 9px;
+        color: #555;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 1px;
+      }
+      .status-badge {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        padding: 4px 10px;
+        border-radius: 100px;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+      }
+      .status-badge.offline {
+        background: rgba(255, 50, 50, 0.1);
+        border: 1px solid rgba(255, 50, 50, 0.2);
+        color: #ff4444;
+      }
+      .status-badge.online {
+        background: rgba(0, 255, 136, 0.08);
+        border: 1px solid rgba(0, 255, 136, 0.2);
+        color: #00ff88;
+      }
+      .status-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+      }
+      .offline .status-dot { background: #ff4444; }
+      .online .status-dot { background: #00ff88; animation: glow 2s ease-in-out infinite; }
+      @keyframes glow {
+        0%, 100% { box-shadow: 0 0 3px #00ff88; }
+        50% { box-shadow: 0 0 8px #00ff88, 0 0 16px rgba(0,255,136,0.3); }
+      }
+      .console-wrap {
+        flex: 1;
+        overflow: hidden;
+        position: relative;
+      }
+      .console {
+        font-family: 'Space Mono', monospace;
+        font-size: 11px;
+        background: #0a0a0a;
+        padding: 10px 14px;
+        height: 100%;
+        overflow-y: auto;
+        line-height: 1.6;
+        white-space: pre-wrap;
+        word-break: break-all;
+      }
+      .console .welcome {
+        color: #333;
+        font-size: 10px;
+      }
+      .console .ascii {
+        color: #00ff88;
+        font-size: 9px;
+        line-height: 1.2;
+        opacity: 0.6;
+      }
+      .console .tagline {
+        color: #555;
+        font-size: 10px;
+        font-style: italic;
+        margin-bottom: 8px;
+        display: block;
+      }
+      .console .divider {
+        color: #1a1a1a;
+        display: block;
+        margin: 4px 0;
+      }
+      .console .warn { color: #ffaa00; }
+      .console .error { color: #ff4466; }
+      .console .info { color: #00ff88; }
+      .console .log { color: #666; }
+      .console .system { color: #333; }
+      .console-fade {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        background: linear-gradient(transparent, #0a0a0a);
+        pointer-events: none;
+      }
+      .footer {
+        padding: 6px 14px;
+        border-top: 1px solid #1a1a1a;
+        display: flex;
+        justify-content: space-between;
+        font-size: 9px;
+        color: #333;
+        letter-spacing: 0.5px;
+      }
+      ::-webkit-scrollbar { width: 4px; }
+      ::-webkit-scrollbar-track { background: transparent; }
+      ::-webkit-scrollbar-thumb { background: #222; border-radius: 2px; }
+      ::-webkit-scrollbar-thumb:hover { background: #333; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <img class="avatar" src="data:image/png;base64,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" />
+        <div class="brand">
+          <div class="brand-name">Design Lazyyy</div>
+          <div class="brand-sub">Remote Server</div>
+        </div>
+        <div class="status-badge offline" id="statusBadge">
+          <div class="status-dot"></div>
+          <span id="statusText">offline</span>
+        </div>
+      </div>
+      <div class="console-wrap">
+        <div class="console" id="log"><span class="ascii">
+  ██▓    ▄▄▄      ▒███████▒▓██   ██▓▓██   ██▓▓██   ██▓
+ ▓██▒   ▒████▄    ▒ ▒ ▒ ▄▀░ ▒██  ██▒ ▒██  ██▒ ▒██  ██▒
+ ▒██░   ▒██  ▀█▄  ░ ▒ ▄▀▒░   ▒██ ██░  ▒██ ██░  ▒██ ██░
+ ▒██░   ░██▄▄▄▄██   ▄▀▒   ░  ░ ▐██▓░  ░ ▐██▓░  ░ ▐██▓░
+ ░██████▒▓█   ▓██▒▒███████▒  ░ ██▒▓░  ░ ██▒▓░  ░ ██▒▓░
+ ░ ▒░▓  ░▒▒   ▓▒█░░▒▒ ▓░▒░▒   ██▒▒▒    ██▒▒▒    ██▒▒▒
+</span>
+<span class="tagline">"Design smarter, not harder." — Lazyyy Cat</span>
+<span class="divider">────────────────────────────────────────</span>
+</div>
+        <div class="console-fade"></div>
+      </div>
+      <div class="footer">
+        <span>v1.0 &middot; Design Lazyyy</span>
+        <span id="clock"></span>
+      </div>
+    </div>
+    <script>
+      var PORT_START=9223,PORT_END=9232,POLL_INTERVAL=1000,SCAN_INTERVAL=5000,connectedPort=null,polling=false;
+      var statusBadge=document.getElementById("statusBadge"),statusText=document.getElementById("statusText"),logEl=document.getElementById("log"),clockEl=document.getElementById("clock");
+      setInterval(function(){clockEl.textContent=new Date().toLocaleTimeString();},1000);
+      function addLog(m,l){l=l||"log";var e=document.createElement("div");e.className=l;e.textContent="["+new Date().toLocaleTimeString()+"] "+m;logEl.appendChild(e);logEl.scrollTop=logEl.scrollHeight;while(logEl.children.length>200)logEl.removeChild(logEl.firstChild);}
+      function setStatus(c,t){statusBadge.className="status-badge "+(c?"online":"offline");statusText.textContent=t;}
+      function tryPort(p){return fetch("http://localhost:"+p+"/health").then(function(r){if(r.ok)return p;throw 0;}).catch(function(){return null;});}
+      function scanPorts(){if(connectedPort)return;setStatus(false,"scanning");addLog("Scanning ports...","system");var ps=[];for(var p=PORT_START;p<=PORT_END;p++)ps.push(tryPort(p));Promise.all(ps).then(function(r){for(var i=0;i<r.length;i++)if(r[i]){connectedPort=r[i];setStatus(true,"port "+connectedPort);addLog("Connected on port "+connectedPort,"info");startPolling();return;}setStatus(false,"offline");addLog("No server found. Retrying...","warn");setTimeout(scanPorts,SCAN_INTERVAL);});}
+      function startPolling(){if(polling)return;polling=true;pollCommands();}
+      function pollCommands(){if(!connectedPort){polling=false;scanPorts();return;}fetch("http://localhost:"+connectedPort+"/poll").then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(cmds){if(cmds&&cmds.length)cmds.forEach(function(c){addLog("RECV << "+c.type+" ["+c.id.slice(0,8)+"]","info");parent.postMessage({pluginMessage:{type:"command",id:c.id,commandType:c.type,payload:c.payload}},"*");});setTimeout(pollCommands,POLL_INTERVAL);}).catch(function(){addLog("Connection lost","error");connectedPort=null;polling=false;setStatus(false,"offline");setTimeout(scanPorts,SCAN_INTERVAL);});}
+      window.onmessage=function(e){var msg=e.data.pluginMessage;if(!msg||!connectedPort)return;if(msg.type==="command_response"){fetch("http://localhost:"+connectedPort+"/response",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)}).then(function(){addLog("SEND >> "+msg.id.slice(0,8)+" "+(msg.success?"[OK]":"[FAIL]"),msg.success?"info":"error");}).catch(function(e){addLog("Send failed: "+e.message,"error");});}else if(msg.type==="console_log"){fetch("http://localhost:"+connectedPort+"/console",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)}).catch(function(){});addLog("["+msg.level.toUpperCase()+"] "+msg.message,msg.level);}};
+      scanPorts();
+    </script>
+  </body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "name": "Design Lazyyy Remote Server",
+  "id": "8392047561283947562",
+  "api": "1.0.0",
+  "main": "code.js",
+  "ui": "ui.html",
+  "editorType": ["figma"],
+  "networkAccess": {
+    "allowedDomains": [
+      "http://localhost:9223",
+      "http://localhost:9224",
+      "http://localhost:9225",
+      "http://localhost:9226",
+      "http://localhost:9227",
+      "http://localhost:9228",
+      "http://localhost:9229",
+      "http://localhost:9230",
+      "http://localhost:9231",
+      "http://localhost:9232"
+    ],
+    "reasoning": "Connects to local MCP server for design write operations"
+  }
+}
