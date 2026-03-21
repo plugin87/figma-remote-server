@@ -1,6 +1,6 @@
 # Design Lazyyy — Figma MCP Server
 
-> AI-powered Figma integration with 44 tools for design system analysis, token extraction, accessibility auditing, and read/write operations via natural language.
+> AI-powered Figma integration with 46 tools for design system analysis, token extraction, accessibility auditing, and read/write operations via natural language.
 
 ---
 
@@ -177,6 +177,8 @@ Done! Now you can create/edit nodes, variables, and more via Claude.
 | `figma_delete_node` | Delete a node |
 | `figma_rename_node` | Rename a node |
 | `figma_create_child` | Create child node |
+| `figma_create_slot` | Create a slot (content placeholder) on component |
+| `figma_add_component_property` | Add property (BOOLEAN/TEXT/SLOT/INSTANCE_SWAP/VARIANT) |
 | `figma_instantiate_component` | Create component instance |
 | `figma_set_description` | Set component description |
 | `figma_arrange_component_set` | Auto-arrange variants grid |
