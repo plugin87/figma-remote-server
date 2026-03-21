@@ -262,6 +262,64 @@ var handlers = {
     return { id: child.id, name: child.name, type: child.type };
   },
 
+  create_slot: function (p) {
+    var component = figma.getNodeById(p.component_id);
+    if (!component || component.type !== "COMPONENT") {
+      throw new Error("Node " + p.component_id + " is not a component");
+    }
+    // Snapshot existing property keys before createSlot
+    var propsBefore = component.componentPropertyDefinitions
+      ? Object.keys(component.componentPropertyDefinitions)
+      : [];
+
+    var slot = component.createSlot();
+    slot.name = p.slot_name || "slot";
+    if (p.width && p.height) slot.resize(p.width, p.height);
+    else if (p.width) slot.resize(p.width, slot.height);
+    else if (p.height) slot.resize(slot.width, p.height);
+
+    // Delete the auto-generated duplicate property from createSlot()
+    var propsAfter = component.componentPropertyDefinitions
+      ? Object.keys(component.componentPropertyDefinitions)
+      : [];
+    var autoKeys = propsAfter.filter(function (k) { return propsBefore.indexOf(k) === -1; });
+    autoKeys.forEach(function (k) {
+      try { component.deleteComponentProperty(k); } catch (e) { /* ignore */ }
+    });
+
+    // Add our own named property and bind it
+    var propKey = component.addComponentProperty(
+      p.property_name || p.slot_name || "slot",
+      "SLOT",
+      p.default_value || ""
+    );
+    slot.componentPropertyReferences = { slotContentId: propKey };
+    return {
+      slotId: slot.id,
+      slotName: slot.name,
+      propertyKey: propKey,
+      componentId: component.id,
+    };
+  },
+
+  add_component_property: function (p) {
+    var component = figma.getNodeById(p.component_id);
+    if (!component || component.type !== "COMPONENT") {
+      throw new Error("Node " + p.component_id + " is not a component");
+    }
+    var propKey = component.addComponentProperty(
+      p.property_name,
+      p.property_type,
+      p.default_value || ""
+    );
+    return {
+      propertyKey: propKey,
+      propertyName: p.property_name,
+      propertyType: p.property_type,
+      componentId: component.id,
+    };
+  },
+
   instantiate_component: function (p) {
     var component = figma.getNodeById(p.component_id);
     if (!component || component.type !== "COMPONENT") {

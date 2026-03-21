@@ -549,6 +549,58 @@ export function registerWriteTools(
     }
   );
 
+  // ---- Slot & Component Properties ----
+
+  server.tool(
+    "figma_create_slot",
+    "Create a slot (content placeholder) on a component with an INSTANCE_SWAP or SLOT property. The slot allows users to swap content when using instances. Requires Desktop Bridge plugin.",
+    {
+      component_id: z.string().describe("Component ID to add the slot to"),
+      slot_name: z.string().describe("Name for the slot (e.g. 'icon-slot', 'content-slot')"),
+      property_name: z.string().optional().describe("Display name for the property in Figma UI. Defaults to slot_name"),
+      default_value: z.string().optional().describe("Default value for the slot property"),
+      width: z.number().optional().describe("Slot width in pixels"),
+      height: z.number().optional().describe("Slot height in pixels"),
+    },
+    async (args) => {
+      try {
+        const result = await connector.sendCommand({
+          id: makeCommandId(),
+          type: "create_slot",
+          payload: args,
+        });
+        return { content: [{ type: "text", text: JSON.stringify({ success: true, result }, null, 2) }] };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+      }
+    }
+  );
+
+  server.tool(
+    "figma_add_component_property",
+    "Add a component property (BOOLEAN, TEXT, INSTANCE_SWAP, SLOT, VARIANT) to a component. Requires Desktop Bridge plugin.",
+    {
+      component_id: z.string().describe("Component ID"),
+      property_name: z.string().describe("Property name"),
+      property_type: z.enum(["BOOLEAN", "TEXT", "INSTANCE_SWAP", "SLOT", "VARIANT"]).describe("Property type"),
+      default_value: z.string().optional().describe("Default value (e.g. 'true', 'Button text', '')"),
+    },
+    async (args) => {
+      try {
+        const result = await connector.sendCommand({
+          id: makeCommandId(),
+          type: "add_component_property",
+          payload: args,
+        });
+        return { content: [{ type: "text", text: JSON.stringify({ success: true, result }, null, 2) }] };
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        return { content: [{ type: "text", text: `Error: ${message}` }], isError: true };
+      }
+    }
+  );
+
   server.tool(
     "figma_instantiate_component",
     "Create an instance of a component. Requires Desktop Bridge plugin.",
