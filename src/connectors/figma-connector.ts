@@ -43,15 +43,21 @@ export class RestOnlyConnector implements FigmaConnector {
 
   async executeInPluginContext(): Promise<never> {
     throw new Error(
-      "This operation requires the Figma Desktop Bridge plugin. " +
-        "Write operations cannot be performed via the REST API alone. " +
-        "Install the figma-desktop-bridge plugin in Figma Desktop to enable write operations."
+      "Desktop Bridge server ไม่สามารถเริ่มได้ (port 9223-9232 อาจถูกใช้งานอยู่)\n\n" +
+        "วิธีแก้:\n" +
+        "1. ปิด Claude Desktop ทั้งหมด (Cmd+Q) แล้วเปิดใหม่\n" +
+        "2. ถ้ายังไม่ได้ ลอง: lsof -i :9223 เพื่อเช็คว่า port ถูกใช้โดยอะไร\n" +
+        "3. Kill process ที่ใช้ port นั้นแล้วลองใหม่"
     );
   }
 
   async sendCommand(): Promise<never> {
     throw new Error(
-      "No Desktop Bridge connected. Write operations require the Figma Desktop Bridge plugin."
+      "Desktop Bridge server ไม่สามารถเริ่มได้ (port 9223-9232 อาจถูกใช้งานอยู่)\n\n" +
+        "วิธีแก้:\n" +
+        "1. ปิด Claude Desktop ทั้งหมด (Cmd+Q) แล้วเปิดใหม่\n" +
+        "2. ถ้ายังไม่ได้ ลอง: lsof -i :9223 เพื่อเช็คว่า port ถูกใช้โดยอะไร\n" +
+        "3. Kill process ที่ใช้ port นั้นแล้วลองใหม่"
     );
   }
 }

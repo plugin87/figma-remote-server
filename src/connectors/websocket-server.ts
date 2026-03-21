@@ -110,6 +110,20 @@ export class DesktopBridgeServer {
       return;
     }
 
+    if (req.method === "GET" && req.url === "/diagnostics") {
+      res.writeHead(200, { "Content-Type": "application/json" });
+      res.end(JSON.stringify({
+        port: this.port,
+        connected: this.connected,
+        lastPollTime: this.lastPollTime,
+        lastPollAgo: this.lastPollTime ? Date.now() - this.lastPollTime : null,
+        pendingCommands: this.pendingCommands.length,
+        activeCallbacks: this.commandCallbacks.size,
+        uptime: Math.floor(process.uptime()),
+      }));
+      return;
+    }
+
     if (req.method === "GET" && req.url === "/poll") {
       this.markConnected();
       const commands = this.pendingCommands.splice(0);
@@ -187,22 +201,37 @@ export class DesktopBridgeServer {
     }
     this.lastPollTime = Date.now();
 
-    // Reset disconnect timer
+    // Reset disconnect timer — use 30s to tolerate brief interruptions
     if (this.disconnectTimer) clearTimeout(this.disconnectTimer);
     this.disconnectTimer = setTimeout(() => {
-      if (Date.now() - this.lastPollTime > 10_000) {
+      if (Date.now() - this.lastPollTime > 30_000) {
         this.connected = false;
         this.events?.onDisconnect("http-plugin");
-        this.logger.info("Figma plugin disconnected (no poll for 10s)");
+        this.logger.info("Figma plugin disconnected (no poll for 30s)");
       }
-    }, 10_000);
+    }, 30_000);
   }
 
   async sendCommand(command: PluginCommand): Promise<unknown> {
+    // Wait up to 10s for plugin to connect if not already connected
+    if (!this.connected) {
+      this.logger.info({ port: this.port }, "Waiting for Desktop Bridge plugin to connect...");
+      const waitStart = Date.now();
+      const maxWait = 10_000;
+      while (!this.connected && Date.now() - waitStart < maxWait) {
+        await new Promise((r) => setTimeout(r, 500));
+      }
+    }
+
     if (!this.connected) {
       throw new Error(
-        "No Figma Desktop Bridge plugin connected. " +
-          "Open Figma Desktop → Plugins → Development → Design Lazyyy Desktop Bridge"
+        "Desktop Bridge plugin ยังไม่ได้เชื่อมต่อ (port: " + (this.port ?? "none") + ")\n\n" +
+          "วิธีแก้:\n" +
+          "1. ใช้ Figma Desktop App (ไม่ใช่ browser)\n" +
+          "2. เปิดไฟล์ที่ต้องการแก้ไข\n" +
+          "3. Menu (≡) → Plugins → Development → Design Lazyyy Desktop Bridge\n" +
+          "4. รอจน plugin แสดงสถานะ 'online' (สีเขียว)\n\n" +
+          "ถ้าเปิด plugin แล้วยังไม่ได้ ลองปิด Claude Desktop แล้วเปิดใหม่"
       );
     }
 

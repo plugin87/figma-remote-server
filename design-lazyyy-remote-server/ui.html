@@ -181,16 +181,85 @@
       </div>
     </div>
     <script>
-      var PORT_START=9223,PORT_END=9232,POLL_INTERVAL=1000,SCAN_INTERVAL=5000,connectedPort=null,polling=false;
+      var PORT_START=9223,PORT_END=9232,POLL_INTERVAL=1000,SCAN_INTERVAL=3000;
+      var connectedPort=null,polling=false,failCount=0,MAX_FAIL=3,connectedSince=null;
       var statusBadge=document.getElementById("statusBadge"),statusText=document.getElementById("statusText"),logEl=document.getElementById("log"),clockEl=document.getElementById("clock");
-      setInterval(function(){clockEl.textContent=new Date().toLocaleTimeString();},1000);
+
+      setInterval(function(){
+        var now=new Date().toLocaleTimeString();
+        if(connectedSince){
+          var elapsed=Math.floor((Date.now()-connectedSince)/1000);
+          var m=Math.floor(elapsed/60),s=elapsed%60;
+          clockEl.textContent=now+" | "+m+"m "+s+"s";
+        }else{clockEl.textContent=now;}
+      },1000);
+
       function addLog(m,l){l=l||"log";var e=document.createElement("div");e.className=l;e.textContent="["+new Date().toLocaleTimeString()+"] "+m;logEl.appendChild(e);logEl.scrollTop=logEl.scrollHeight;while(logEl.children.length>200)logEl.removeChild(logEl.firstChild);}
-      function setStatus(c,t){statusBadge.className="status-badge "+(c?"online":"offline");statusText.textContent=t;}
-      function tryPort(p){return fetch("http://localhost:"+p+"/health").then(function(r){if(r.ok)return p;throw 0;}).catch(function(){return null;});}
-      function scanPorts(){if(connectedPort)return;setStatus(false,"scanning");addLog("Scanning ports...","system");var ps=[];for(var p=PORT_START;p<=PORT_END;p++)ps.push(tryPort(p));Promise.all(ps).then(function(r){for(var i=0;i<r.length;i++)if(r[i]){connectedPort=r[i];setStatus(true,"port "+connectedPort);addLog("Connected on port "+connectedPort,"info");startPolling();return;}setStatus(false,"offline");addLog("No server found. Retrying...","warn");setTimeout(scanPorts,SCAN_INTERVAL);});}
+      function setStatus(c,t){statusBadge.className="status-badge "+(c?"online":"offline");statusText.textContent=t;if(c&&!connectedSince)connectedSince=Date.now();if(!c)connectedSince=null;}
+      function tryPort(p){return fetch("http://localhost:"+p+"/health",{signal:AbortSignal.timeout(2000)}).then(function(r){if(r.ok)return p;throw 0;}).catch(function(){return null;});}
+
+      function scanPorts(){
+        if(connectedPort)return;
+        setStatus(false,"scanning");
+        addLog("Scanning ports "+PORT_START+"-"+PORT_END+"...","system");
+        var ps=[];
+        for(var p=PORT_START;p<=PORT_END;p++)ps.push(tryPort(p));
+        Promise.all(ps).then(function(r){
+          for(var i=0;i<r.length;i++){
+            if(r[i]){
+              connectedPort=r[i];failCount=0;
+              setStatus(true,"port "+connectedPort);
+              addLog("Connected on port "+connectedPort,"info");
+              startPolling();
+              return;
+            }
+          }
+          setStatus(false,"offline");
+          addLog("No server found on ports "+PORT_START+"-"+PORT_END+". Is Claude Desktop running?","warn");
+          setTimeout(scanPorts,SCAN_INTERVAL);
+        });
+      }
+
       function startPolling(){if(polling)return;polling=true;pollCommands();}
-      function pollCommands(){if(!connectedPort){polling=false;scanPorts();return;}fetch("http://localhost:"+connectedPort+"/poll").then(function(r){if(!r.ok)throw 0;return r.json();}).then(function(cmds){if(cmds&&cmds.length)cmds.forEach(function(c){addLog("RECV << "+c.type+" ["+c.id.slice(0,8)+"]","info");parent.postMessage({pluginMessage:{type:"command",id:c.id,commandType:c.type,payload:c.payload}},"*");});setTimeout(pollCommands,POLL_INTERVAL);}).catch(function(){addLog("Connection lost","error");connectedPort=null;polling=false;setStatus(false,"offline");setTimeout(scanPorts,SCAN_INTERVAL);});}
-      window.onmessage=function(e){var msg=e.data.pluginMessage;if(!msg||!connectedPort)return;if(msg.type==="command_response"){fetch("http://localhost:"+connectedPort+"/response",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)}).then(function(){addLog("SEND >> "+msg.id.slice(0,8)+" "+(msg.success?"[OK]":"[FAIL]"),msg.success?"info":"error");}).catch(function(e){addLog("Send failed: "+e.message,"error");});}else if(msg.type==="console_log"){fetch("http://localhost:"+connectedPort+"/console",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)}).catch(function(){});addLog("["+msg.level.toUpperCase()+"] "+msg.message,msg.level);}};
+
+      function pollCommands(){
+        if(!connectedPort){polling=false;scanPorts();return;}
+        fetch("http://localhost:"+connectedPort+"/poll",{signal:AbortSignal.timeout(5000)})
+          .then(function(r){if(!r.ok)throw 0;return r.json();})
+          .then(function(cmds){
+            failCount=0;
+            if(cmds&&cmds.length)cmds.forEach(function(c){
+              addLog("RECV << "+c.type+" ["+c.id.slice(0,8)+"]","info");
+              parent.postMessage({pluginMessage:{type:"command",id:c.id,commandType:c.type,payload:c.payload}},"*");
+            });
+            setTimeout(pollCommands,POLL_INTERVAL);
+          })
+          .catch(function(){
+            failCount++;
+            if(failCount>=MAX_FAIL){
+              addLog("Connection lost after "+MAX_FAIL+" retries","error");
+              connectedPort=null;polling=false;
+              setStatus(false,"offline");
+              setTimeout(scanPorts,SCAN_INTERVAL);
+            }else{
+              addLog("Poll failed ("+failCount+"/"+MAX_FAIL+"), retrying...","warn");
+              setTimeout(pollCommands,POLL_INTERVAL);
+            }
+          });
+      }
+
+      window.onmessage=function(e){
+        var msg=e.data.pluginMessage;if(!msg||!connectedPort)return;
+        if(msg.type==="command_response"){
+          fetch("http://localhost:"+connectedPort+"/response",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)})
+            .then(function(){addLog("SEND >> "+msg.id.slice(0,8)+" "+(msg.success?"[OK]":"[FAIL]"),msg.success?"info":"error");})
+            .catch(function(e){addLog("Send failed: "+e.message,"error");});
+        }else if(msg.type==="console_log"){
+          fetch("http://localhost:"+connectedPort+"/console",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(msg)}).catch(function(){});
+          addLog("["+msg.level.toUpperCase()+"] "+msg.message,msg.level);
+        }
+      };
+
       scanPorts();
     </script>
   </body>

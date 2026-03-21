@@ -49,7 +49,7 @@ export function registerAllTools(options: ToolRegistrationOptions): void {
   const { server, apiClient, logger, connector, bridge } = options;
 
   // Read-only tools (always available)
-  registerFileTools(server, apiClient, logger);
+  registerFileTools(server, apiClient, logger, connector, bridge);
   registerVariableTools(server, apiClient, logger);
   registerStyleTools(server, apiClient, logger);
   registerComponentTools(server, apiClient, logger);

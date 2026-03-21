@@ -2,6 +2,8 @@ import { z } from "zod";
 import type { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import type { FigmaApiClient } from "../figma-api.js";
 import type { Logger } from "../logger.js";
+import type { FigmaConnector } from "../../connectors/figma-connector.js";
+import type { DesktopBridgeServer } from "../../connectors/websocket-server.js";
 import { parseFigmaUrl } from "../url-parser.js";
 import { compressResponse } from "../response-utils.js";
 import { FileDataInput, FileMetadataInput, NavigateInput } from "../types/tools.js";
@@ -9,7 +11,9 @@ import { FileDataInput, FileMetadataInput, NavigateInput } from "../types/tools.
 export function registerFileTools(
   server: McpServer,
   apiClient: FigmaApiClient,
-  logger: Logger
+  logger: Logger,
+  connector?: FigmaConnector,
+  bridge?: DesktopBridgeServer
 ): void {
   // ---- figma_get_file_data ----
   server.tool(
@@ -45,25 +49,38 @@ export function registerFileTools(
   // ---- figma_get_status ----
   server.tool(
     "figma_get_status",
-    "Check connection status by fetching the authenticated user's Figma profile.",
+    "Check connection status by fetching the authenticated user's Figma profile. Also shows Desktop Bridge status for write operations.",
     {},
     async () => {
       try {
         const user = await apiClient.getMe();
+        const result: Record<string, unknown> = {
+          status: "connected",
+          user: { id: user.id, handle: user.handle, email: user.email },
+        };
+
+        // Include bridge status if available
+        if (bridge) {
+          result.bridge = {
+            status: bridge.isConnected ? "connected" : "disconnected",
+            port: bridge.activePort,
+            writeOperationsAvailable: bridge.isConnected,
+          };
+          if (!bridge.isConnected) {
+            result.bridge_hint =
+              "Desktop Bridge ยังไม่ได้เชื่อมต่อ — write tools จะใช้ไม่ได้\n" +
+              "เปิด Figma Desktop → Plugins → Development → Design Lazyyy Desktop Bridge";
+          }
+        } else if (connector) {
+          result.bridge = {
+            status: "unavailable",
+            port: null,
+            writeOperationsAvailable: connector.isConnected,
+          };
+        }
+
         return {
-          content: [
-            {
-              type: "text",
-              text: JSON.stringify(
-                {
-                  status: "connected",
-                  user: { id: user.id, handle: user.handle, email: user.email },
-                },
-                null,
-                2
-              ),
-            },
-          ],
+          content: [{ type: "text", text: JSON.stringify(result, null, 2) }],
         };
       } catch (error) {
         const message = error instanceof Error ? error.message : String(error);

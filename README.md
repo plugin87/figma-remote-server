@@ -4,43 +4,9 @@
 
 ---
 
-## What is this?
-
-MCP (Model Context Protocol) server that connects AI assistants (Claude Desktop, Claude Code, Cursor, VS Code) to Figma. Ask questions in natural language and get real data from your Figma files — design tokens, components, styles, accessibility scores, and more. With the Desktop Bridge plugin, you can also **write** directly to Figma.
-
-## Key Features
-
-### Read & Analyze
-- **Design Tokens** — Extract variables with alias resolution, export as CSS / SCSS / Tailwind / TypeScript / JSON
-- **Styles** — Colors, typography, effects with code-ready export
-- **Components** — List, search, render as PNG/SVG, generate reconstruction specs
-- **Accessibility Audit** — WCAG 2.2 AA checks: contrast, target size, heading hierarchy, spacing grid
-- **Design System Scoring** — 6-dimension quality score: hierarchy, consistency, accessibility, usability, responsiveness, performance
-- **Token Architecture** — 3-tier validation (Primitive / Semantic / Component)
-- **Design-Code Parity** — Compare Figma tokens vs code tokens, get parity score
-- **Component Docs** — Auto-generate docs with anatomy, variants, states, ARIA patterns, handoff checklist
-- **Comments** — Read, post, delete, with threaded markdown view
-
-### Write & Create (via Desktop Bridge Plugin)
-- **Variables** — Full CRUD: create, update, delete, rename, batch operations
-- **Token System Setup** — One command to create 3-tier token architecture with dark mode
-- **Node Manipulation** — Resize, move, clone, delete, rename, create children
-- **Styling** — Set fills, strokes, text, images
-- **Components** — Instantiate, set descriptions, arrange variant grids
-- **Plugin API** — Execute arbitrary Figma Plugin API JavaScript
-
-### Intelligence (UX/UI Architect)
-- **WCAG 2.2 AA** — Contrast 4.5:1 text / 3:1 UI, target size 24px min, heading hierarchy
-- **4px Spacing Grid** — Auto-validate and snap spacing values
-- **Major Third Type Scale** — 12, 14, 16, 18, 20, 24, 30, 36, 48, 60, 72px
-- **Token Naming** — Validate `{category}.{property}.{variant}-{state}` convention
-- **Component Quality Bar** — 8 states, ARIA patterns, keyboard model, handoff checklist
-
----
-
 ## Quick Start
 
-### Step 1: Clone & Install
+### 1. Clone & Install
 
 ```bash
 git clone https://github.com/plugin87/figma-remote-server.git
@@ -49,28 +15,32 @@ npm install
 npm run build
 ```
 
-### Step 2: Get a Figma Token
+### 2. Get Figma Token
 
 1. Go to [Figma](https://www.figma.com) → **Settings** → **Security**
 2. Click **Personal Access Tokens** → **Generate new token**
-3. Name it anything (e.g. `design-lazyyy`)
-4. Copy the token (starts with `figd_...`)
+3. Name: `design-lazyyy`
+4. **Scopes** — tick ทุกอัน (Read & Write)
+5. Copy token (starts with `figd_...`)
 
-### Step 3: Set up your token
+### 3. Config
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` and replace `figd_your_token_here` with your actual token:
+Open `.env` → paste your token:
 
 ```
-FIGMA_ACCESS_TOKEN=figd_your_actual_token_here
+FIGMA_ACCESS_TOKEN=figd_your_token_here
 ```
 
-### Step 4: Connect to Claude Desktop
+### 4. Connect to Claude Desktop
 
-Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
+Edit config file:
+
+- **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
+- **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
 
 ```json
 {
@@ -79,101 +49,113 @@ Edit `~/Library/Application Support/Claude/claude_desktop_config.json`:
       "command": "node",
       "args": ["/full/path/to/figma-remote-server/dist/local.js"],
       "env": {
-        "FIGMA_ACCESS_TOKEN": "figd_your_actual_token_here"
+        "FIGMA_ACCESS_TOKEN": "figd_your_token_here"
       }
     }
   }
 }
 ```
 
-> **Tip**: Replace `/full/path/to/` with the actual path where you cloned the repo.
-> To find it, run `pwd` in the project folder.
+> **Tip:** Run `pwd` in the project folder to get the full path.
 
-> **Node version issue?** If you get errors, use the full path to Node 20+:
-> `"command": "/Users/yourname/.nvm/versions/node/v20.x.x/bin/node"`
+> **Node version issue?** Use the full path to Node 20+:
+> ```json
+> "command": "/Users/yourname/.nvm/versions/node/v20.x.x/bin/node"
+> ```
+>
+> Find your node path with: `which node`
 
-### Step 5: Restart Claude Desktop
+### 5. Restart Claude Desktop
 
-Quit Claude Desktop completely (Cmd+Q) and reopen it.
+Quit completely (Cmd+Q) → Reopen.
 
-### Step 6: Test it
+### 6. Test
 
-Open a new chat in Claude Desktop and type:
+Type in Claude Desktop:
 
 ```
 Check Figma status
 ```
 
-If you see `Connected` with your Figma username — you're all set!
+You should see:
+- `status: "connected"` — API works
+- `bridge.status: "connected"` — Write operations ready
+- `bridge.status: "disconnected"` — Need to open Desktop Bridge plugin (Step 7)
 
-Now try:
-
-```
-Get design tokens as CSS from https://www.figma.com/design/xxxxx/MyFile
-```
-
-```
-Lint accessibility of this file: https://www.figma.com/design/xxxxx/MyApp
-```
-
-### Step 7: Enable Write Operations (Optional)
+### 7. Enable Write Operations (Optional)
 
 Write tools (create nodes, edit text, manage variables) need the Figma Desktop plugin:
 
 1. Open **Figma Desktop App** (not the browser)
-2. Open any Figma file
-3. Go to **Main Menu → Plugins → Development → Import plugin from manifest...**
-4. Navigate to the cloned repo and select: `design-lazyyy-remote-server/manifest.json`
+2. Open any file
+3. **Menu (≡) → Plugins → Development → Import plugin from manifest...**
+4. Select: `figma-remote-server/design-lazyyy-remote-server/manifest.json`
 5. Run the plugin: **Plugins → Development → Design Lazyyy Remote Server**
-6. Wait until the plugin window shows **Connected**
+6. Wait until the plugin shows **online** (green)
 
 Done! Now you can create/edit nodes, variables, and more via Claude.
 
-> See [how-to-use.md](./how-to-use.md) for all 5 connection methods (Claude Desktop, CLI, Cursor, Browser, Cloud)
+---
+
+## Troubleshooting
+
+### Plugin shows "offline" — can't connect
+
+1. **ใช้ Figma Desktop App** ไม่ใช่ browser version
+2. เช็คว่า Claude Desktop เปิดอยู่ (MCP server ต้องรันอยู่)
+3. ลองเปิด browser แล้วเข้า `http://localhost:9223/diagnostics`
+   - ถ้าเห็น JSON → server ทำงานอยู่ ปิด plugin แล้วเปิดใหม่
+   - ถ้า error → Claude Desktop อาจไม่ได้รัน MCP server ลอง restart
+
+### Write tools fail — "Desktop Bridge not connected"
+
+1. Run `Check Figma status` ดู `bridge.status`
+2. ถ้า `disconnected`:
+   - เปิด Figma Desktop → run Design Lazyyy plugin
+   - รอให้ขึ้น **online** (สีเขียว)
+3. ถ้า `unavailable`:
+   - Port 9223-9232 อาจถูกใช้อยู่
+   - ลอง: `lsof -i :9223` เพื่อเช็ค
+   - ปิด Claude Desktop ทั้งหมด (Cmd+Q) แล้วเปิดใหม่
+
+### Plugin connects then disconnects
+
+- อาจมี Claude Desktop หลาย instance ทำงานอยู่ → ปิดทั้งหมดแล้วเปิดแค่อันเดียว
+- ลอง: `lsof -i :9223-9232` เพื่อเช็ค process ที่ใช้ port
+
+### Command timed out
+
+- Figma อาจไม่ตอบสนอง ลองคลิกในไฟล์ Figma แล้วลองใหม่
+- สำหรับ `set_text` ต้องมี font ที่ใช้ติดตั้งอยู่ในเครื่อง
 
 ---
 
 ## All 44 Tools
 
-### File & Navigation (5)
+### Read & Analyze
 | Tool | Description |
 |------|-------------|
-| `figma_get_status` | Check connection + user info |
+| `figma_get_status` | Check API + Bridge connection |
 | `figma_get_file_data` | Get file document tree |
-| `figma_get_file_metadata` | Get file metadata (name, version, counts) |
+| `figma_get_file_metadata` | Get file metadata |
 | `figma_get_file_versions` | Get version history |
-| `figma_navigate` | Generate deep link to a node |
-
-### Design Tokens & Styles (2)
-| Tool | Description |
-|------|-------------|
-| `figma_get_variables` | Extract variables with alias resolution + multi-format export |
-| `figma_get_styles` | Extract styles with enrichment + code export |
-
-### Components (2)
-| Tool | Description |
-|------|-------------|
-| `figma_get_component` | Get component spec (search by name or ID) |
+| `figma_navigate` | Generate deep link to node |
+| `figma_get_variables` | Extract variables + multi-format export |
+| `figma_get_styles` | Extract styles + code export |
+| `figma_get_component` | Get component spec |
 | `figma_get_component_image` | Render nodes as PNG/SVG/PDF/JPG |
-
-### Comments (3)
-| Tool | Description |
-|------|-------------|
-| `figma_get_comments` | Get all comments (markdown + threaded) |
+| `figma_get_comments` | Get all comments |
 | `figma_post_comment` | Post a comment |
 | `figma_delete_comment` | Delete a comment |
-
-### Design Intelligence (4)
-| Tool | Description |
-|------|-------------|
-| `figma_get_design_system_kit` | Full design system analysis + quality scores |
+| `figma_get_design_system_kit` | Full design system analysis |
 | `figma_lint_design` | WCAG 2.2 AA accessibility audit |
 | `figma_check_design_parity` | Design vs code token comparison |
-| `figma_generate_component_doc` | Auto-generate component documentation |
+| `figma_generate_component_doc` | Auto-generate component docs |
 
-### Write — Variables (11)
+### Write (Desktop Bridge Required)
 | Tool | Description |
 |------|-------------|
+| `figma_execute` | Run arbitrary Plugin API code |
 | `figma_create_variable` | Create a variable |
 | `figma_update_variable` | Update variable values |
 | `figma_delete_variable` | Delete a variable |
@@ -185,11 +167,6 @@ Done! Now you can create/edit nodes, variables, and more via Claude.
 | `figma_batch_create_variables` | Batch create (max 100) |
 | `figma_batch_update_variables` | Batch update (max 100) |
 | `figma_setup_design_tokens` | Setup 3-tier token architecture |
-
-### Write — Nodes (14)
-| Tool | Description |
-|------|-------------|
-| `figma_execute` | Run arbitrary Plugin API code |
 | `figma_resize_node` | Resize a node |
 | `figma_move_node` | Move a node |
 | `figma_set_fills` | Set fill colors |
@@ -204,24 +181,12 @@ Done! Now you can create/edit nodes, variables, and more via Claude.
 | `figma_set_description` | Set component description |
 | `figma_arrange_component_set` | Auto-arrange variants grid |
 
-### Console (3)
+### Console (Local Mode)
 | Tool | Description |
 |------|-------------|
 | `figma_get_console_logs` | Get plugin console logs |
 | `figma_clear_console` | Clear console logs |
 | `figma_watch_console` | Watch bridge status + logs |
-
----
-
-## Export Formats
-
-| Format | Output |
-|--------|--------|
-| CSS | `--color-primary: #2563EB;` |
-| SCSS | `$color-primary: #2563EB;` |
-| Tailwind | `{ colors: { primary: "#2563EB" } }` |
-| TypeScript | `export const tokens = { ... } as const;` |
-| JSON | Raw structured data |
 
 ---
 
@@ -236,8 +201,6 @@ Claude Desktop / Cursor / VS Code
   │  Design Lazyyy MCP Server   │
   │  ┌───────────────────────┐  │
   │  │  44 Tools             │  │
-  │  │  Enrichment Engine    │  │
-  │  │  Scoring Engine       │  │
   │  │  Figma REST API       │  │
   │  │  LRU Cache            │  │
   │  └───────────────────────┘  │
@@ -249,8 +212,6 @@ Claude Desktop / Cursor / VS Code
               ▼
   ┌─────────────────────────────┐
   │  Figma Desktop Plugin       │
-  │  (Design Lazyyy Remote      │
-  │   Server)                   │
   │  ┌───────────────────────┐  │
   │  │  Plugin API Access    │  │
   │  │  Variable CRUD        │  │
@@ -258,16 +219,6 @@ Claude Desktop / Cursor / VS Code
   │  └───────────────────────┘  │
   └─────────────────────────────┘
 ```
-
----
-
-## Tech Stack
-
-- **TypeScript** (ES2022, strict mode)
-- **@modelcontextprotocol/sdk** — MCP protocol
-- **Zod** — Schema validation
-- **Pino** — Structured logging (stderr)
-- **Node.js HTTP** — Desktop Bridge server
 
 ---
 
