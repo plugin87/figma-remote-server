@@ -236,4 +236,17 @@ npm run format    # Format with Biome
 
 ---
 
+## Changelog
+
+### 1.0.1
+
+- **Multi-host bridge** — the Figma plugin now connects to every running MCP server at once (ports 9223–9232) instead of only the first. You can drive the same Figma file from regular Claude Desktop **and** Claude Cowork at the same time; each command's response is routed back to the host that sent it. No port config or manual selection needed.
+- **Continuous connection** — self-healing port scan, per-server poll loops with retry, response send retries (5×), global error handlers, and an automatic rescan on wake-from-sleep so the plugin keeps working without dropping.
+- **`figma_execute` ES5 guidance** — the tool description now spells out that code is evaluated by an ES5-only parser, so the model emits ES5-compatible JavaScript (no arrow functions, template literals, `const`/`let`, or `async`/`await`) and avoids `expecting ';'` parse errors on complex commands.
+
+### 1.0.0
+
+- Initial release — 46 tools for Figma design system analysis, token extraction, accessibility auditing, and read/write operations via the Desktop Bridge plugin.
+
+---
 **Built by Design Lazyyy**

@@ -14,7 +14,7 @@ async function main() {
   const config = loadConfig();
   const logger = createLogger(config.logLevel);
 
-  logger.info({ version: "1.0.0" }, "Starting Design Lazyyy Figma MCP server");
+  logger.info({ version: "1.0.1" }, "Starting Design Lazyyy Figma MCP server");
 
   // Core services
   const cache = new LRUCache(config.cacheMaxSize, config.cacheTtlMs);
@@ -48,7 +48,7 @@ async function main() {
   const server = new McpServer(
     {
       name: "design-lazyyy-figma",
-      version: "1.0.0",
+      version: "1.0.1",
     },
     {
       capabilities: {

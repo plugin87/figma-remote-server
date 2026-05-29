@@ -1,6 +1,6 @@
 {
   "name": "@design-lazyyy/figma-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Design Lazyyy — Figma MCP Server for AI-powered design system analysis, token extraction, and read/write operations",
   "author": "Design Lazyyy",
   "license": "MIT",
