@@ -1,10 +1,36 @@
-# Design Lazyyy — Figma MCP Server
+<div align="center">
 
-> AI-powered Figma integration with 46 tools for design system analysis, token extraction, accessibility auditing, and read/write operations via natural language.
+# 🎨 Design Lazyyy — Figma MCP Server
+
+**AI-powered Figma integration for Claude.**
+46 tools for design system analysis, token extraction, accessibility auditing, and full read/write operations — all through natural language.
+
+[![Version](https://img.shields.io/badge/version-1.0.1-2563eb.svg)](#-changelog)
+[![Tools](https://img.shields.io/badge/tools-46-16a34a.svg)](#-all-46-tools)
+[![Node](https://img.shields.io/badge/node-%3E%3D18-339933.svg?logo=node.js&logoColor=white)](#-quick-start)
+[![MCP](https://img.shields.io/badge/MCP-compatible-7c3aed.svg)](https://modelcontextprotocol.io)
+[![License](https://img.shields.io/badge/license-MIT-64748b.svg)](#-license)
+
+[Quick Start](#-quick-start) · [Features](#-features) · [Tools](#-all-46-tools) · [Troubleshooting](#-troubleshooting) · [Architecture](#-architecture)
+
+</div>
 
 ---
 
-## Quick Start
+## ✨ Features
+
+| | |
+|---|---|
+| 🔍 **Read & Analyze** | Pull file trees, components, variables, styles, comments, and version history straight into Claude. |
+| ✍️ **Write Operations** | Create and edit nodes, text, fills, variables, modes, and components via the Desktop Bridge plugin. |
+| 🎯 **Design Systems** | Full design-system kits, 3-tier token architecture, and auto-generated component docs. |
+| ♿ **Accessibility** | WCAG 2.2 AA audit and design-vs-code token parity checks. |
+| 🖼️ **Asset Export** | Render any node to PNG / SVG / PDF / JPG. |
+| 🔗 **Multi-host** | Drive the same Figma file from Claude Desktop **and** Cowork at the same time. |
+
+---
+
+## 🚀 Quick Start
 
 ### 1. Clone & Install
 
@@ -15,29 +41,29 @@ npm install
 npm run build
 ```
 
-### 2. Get Figma Token
+### 2. Get a Figma Token
 
 1. Go to [Figma](https://www.figma.com) → **Settings** → **Security**
 2. Click **Personal Access Tokens** → **Generate new token**
 3. Name: `design-lazyyy`
 4. **Scopes** — tick ทุกอัน (Read & Write)
-5. Copy token (starts with `figd_...`)
+5. Copy the token (starts with `figd_...`)
 
-### 3. Config
+### 3. Configure
 
 ```bash
 cp .env.example .env
 ```
 
-Open `.env` → paste your token:
+Open `.env` and paste your token:
 
-```
+```ini
 FIGMA_ACCESS_TOKEN=figd_your_token_here
 ```
 
 ### 4. Connect to Claude Desktop
 
-Edit config file:
+Edit the config file:
 
 - **macOS:** `~/Library/Application Support/Claude/claude_desktop_config.json`
 - **Windows:** `%APPDATA%\Claude\claude_desktop_config.json`
@@ -56,18 +82,17 @@ Edit config file:
 }
 ```
 
-> **Tip:** Run `pwd` in the project folder to get the full path.
+> **💡 Tip:** Run `pwd` in the project folder to get the full path.
 
-> **Node version issue?** Use the full path to Node 20+:
+> **⚠️ Node version issue?** Use the full path to Node 18+:
 > ```json
 > "command": "/Users/yourname/.nvm/versions/node/v20.x.x/bin/node"
 > ```
->
-> Find your node path with: `which node`
+> Find your node path with `which node`.
 
 ### 5. Restart Claude Desktop
 
-Quit completely (Cmd+Q) → Reopen.
+Quit completely (**Cmd+Q**) → reopen.
 
 ### 6. Test
 
@@ -78,61 +103,33 @@ Check Figma status
 ```
 
 You should see:
-- `status: "connected"` — API works
-- `bridge.status: "connected"` — Write operations ready
-- `bridge.status: "disconnected"` — Need to open Desktop Bridge plugin (Step 7)
+
+| Result | Meaning |
+|--------|---------|
+| `status: "connected"` | ✅ API works |
+| `bridge.status: "connected"` | ✅ Write operations ready |
+| `bridge.status: "disconnected"` | ⚠️ Open the Desktop Bridge plugin (Step 7) |
 
 ### 7. Enable Write Operations (Optional)
 
 Write tools (create nodes, edit text, manage variables) need the Figma Desktop plugin:
 
-1. Open **Figma Desktop App** (not the browser)
+1. Open the **Figma Desktop App** (not the browser)
 2. Open any file
-3. **Menu (≡) → Plugins → Development → Import plugin from manifest...**
-4. Select: `figma-remote-server/design-lazyyy-remote-server/manifest.json`
-5. Run the plugin: **Plugins → Development → Design Lazyyy Remote Server**
-6. Wait until the plugin shows **online** (green)
+3. **Menu (≡) → Plugins → Development → Import plugin from manifest…**
+4. Select `figma-remote-server/design-lazyyy-remote-server/manifest.json`
+5. Run it: **Plugins → Development → Design Lazyyy Remote Server**
+6. Wait until the plugin shows **online** (🟢 green)
 
-Done! Now you can create/edit nodes, variables, and more via Claude.
-
----
-
-## Troubleshooting
-
-### Plugin shows "offline" — can't connect
-
-1. **ใช้ Figma Desktop App** ไม่ใช่ browser version
-2. เช็คว่า Claude Desktop เปิดอยู่ (MCP server ต้องรันอยู่)
-3. ลองเปิด browser แล้วเข้า `http://localhost:9223/diagnostics`
-   - ถ้าเห็น JSON → server ทำงานอยู่ ปิด plugin แล้วเปิดใหม่
-   - ถ้า error → Claude Desktop อาจไม่ได้รัน MCP server ลอง restart
-
-### Write tools fail — "Desktop Bridge not connected"
-
-1. Run `Check Figma status` ดู `bridge.status`
-2. ถ้า `disconnected`:
-   - เปิด Figma Desktop → run Design Lazyyy plugin
-   - รอให้ขึ้น **online** (สีเขียว)
-3. ถ้า `unavailable`:
-   - Port 9223-9232 อาจถูกใช้อยู่
-   - ลอง: `lsof -i :9223` เพื่อเช็ค
-   - ปิด Claude Desktop ทั้งหมด (Cmd+Q) แล้วเปิดใหม่
-
-### Plugin connects then disconnects
-
-- อาจมี Claude Desktop หลาย instance ทำงานอยู่ → ปิดทั้งหมดแล้วเปิดแค่อันเดียว
-- ลอง: `lsof -i :9223-9232` เพื่อเช็ค process ที่ใช้ port
-
-### Command timed out
-
-- Figma อาจไม่ตอบสนอง ลองคลิกในไฟล์ Figma แล้วลองใหม่
-- สำหรับ `set_text` ต้องมี font ที่ใช้ติดตั้งอยู่ในเครื่อง
+Done! You can now create/edit nodes, variables, and more via Claude. 🎉
 
 ---
 
-## All 44 Tools
+## 🧰 All 46 Tools
 
-### Read & Analyze
+<details open>
+<summary><b>🔍 Read &amp; Analyze</b> — 16 tools</summary>
+
 | Tool | Description |
 |------|-------------|
 | `figma_get_status` | Check API + Bridge connection |
@@ -152,7 +149,11 @@ Done! Now you can create/edit nodes, variables, and more via Claude.
 | `figma_check_design_parity` | Design vs code token comparison |
 | `figma_generate_component_doc` | Auto-generate component docs |
 
-### Write (Desktop Bridge Required)
+</details>
+
+<details open>
+<summary><b>✍️ Write</b> — 27 tools <i>(Desktop Bridge required)</i></summary>
+
 | Tool | Description |
 |------|-------------|
 | `figma_execute` | Run arbitrary Plugin API code |
@@ -177,40 +178,99 @@ Done! Now you can create/edit nodes, variables, and more via Claude.
 | `figma_delete_node` | Delete a node |
 | `figma_rename_node` | Rename a node |
 | `figma_create_child` | Create child node |
-| `figma_create_slot` | Create a slot (content placeholder) on component |
+| `figma_create_slot` | Create a slot (content placeholder) on a component |
 | `figma_add_component_property` | Add property (BOOLEAN/TEXT/SLOT/INSTANCE_SWAP/VARIANT) |
 | `figma_instantiate_component` | Create component instance |
 | `figma_set_description` | Set component description |
 | `figma_arrange_component_set` | Auto-arrange variants grid |
 
-### Console (Local Mode)
+</details>
+
+<details open>
+<summary><b>🖥️ Console</b> — 3 tools <i>(Local mode)</i></summary>
+
 | Tool | Description |
 |------|-------------|
 | `figma_get_console_logs` | Get plugin console logs |
 | `figma_clear_console` | Clear console logs |
 | `figma_watch_console` | Watch bridge status + logs |
 
+</details>
+
 ---
 
-## Architecture
+## 🩺 Troubleshooting
+
+<details>
+<summary><b>Plugin shows "offline" — can't connect</b></summary>
+
+1. **ใช้ Figma Desktop App** ไม่ใช่ browser version
+2. เช็คว่า Claude Desktop เปิดอยู่ (MCP server ต้องรันอยู่)
+3. ลองเปิด browser แล้วเข้า `http://localhost:9223/diagnostics`
+   - ถ้าเห็น JSON → server ทำงานอยู่ ปิด plugin แล้วเปิดใหม่
+   - ถ้า error → Claude Desktop อาจไม่ได้รัน MCP server ลอง restart
+
+</details>
+
+<details>
+<summary><b>Write tools fail — "Desktop Bridge not connected"</b></summary>
+
+1. Run `Check Figma status` ดู `bridge.status`
+2. ถ้า `disconnected`:
+   - เปิด Figma Desktop → run Design Lazyyy plugin
+   - รอให้ขึ้น **online** (🟢 สีเขียว)
+3. ถ้า `unavailable`:
+   - Port 9223–9232 อาจถูกใช้อยู่
+   - ลอง `lsof -i :9223` เพื่อเช็ค
+   - ปิด Claude Desktop ทั้งหมด (Cmd+Q) แล้วเปิดใหม่
+
+</details>
+
+<details>
+<summary><b>Plugin connects then disconnects</b></summary>
+
+- ตั้งแต่ **v1.0.1** plugin ต่อทุก server ที่รันอยู่พร้อมกัน (9223–9232) และต่อกลับเองอัตโนมัติ — โดยปกติไม่หลุดแล้ว
+- ถ้ายังหลุด ลอง `lsof -i :9223-9232` เพื่อเช็ค process ที่ใช้ port
+
+</details>
+
+<details>
+<summary><b>Command timed out</b></summary>
+
+- Figma อาจไม่ตอบสนอง ลองคลิกในไฟล์ Figma แล้วลองใหม่
+- สำหรับ `set_text` ต้องมี font ที่ใช้ติดตั้งอยู่ในเครื่อง
+
+</details>
+
+<details>
+<summary><b><code>figma_execute</code> error: "expecting ;"</b></summary>
+
+- โค้ดใน `figma_execute` ถูกรันด้วย parser แบบ **ES5 เท่านั้น**
+- ใช้ `var` (ไม่ใช่ `const`/`let`), `function(){}` (ไม่ใช่ `=>`), `'+'` (ไม่ใช่ template literal), `.then()` (ไม่ใช่ `async`/`await`)
+
+</details>
+
+---
+
+## 🏗️ Architecture
 
 ```
-Claude Desktop / Cursor / VS Code
+Claude Desktop / Cowork / Cursor / VS Code
         │
         │ MCP (stdio)
         ▼
   ┌─────────────────────────────┐
   │  Design Lazyyy MCP Server   │
   │  ┌───────────────────────┐  │
-  │  │  44 Tools             │  │
+  │  │  46 Tools             │  │
   │  │  Figma REST API       │  │
   │  │  LRU Cache            │  │
   │  └───────────────────────┘  │
   │           │                 │
-  │    HTTP Bridge :9223        │
+  │   HTTP Bridge :9223–9232    │
   └─────────────────────────────┘
               │
-              │ HTTP Polling
+              │ HTTP Polling (multi-host)
               ▼
   ┌─────────────────────────────┐
   │  Figma Desktop Plugin       │
@@ -224,7 +284,7 @@ Claude Desktop / Cursor / VS Code
 
 ---
 
-## Development
+## 🛠️ Development
 
 ```bash
 npm install       # Install dependencies
@@ -236,7 +296,7 @@ npm run format    # Format with Biome
 
 ---
 
-## Changelog
+## 📝 Changelog
 
 ### 1.0.1
 
@@ -249,4 +309,13 @@ npm run format    # Format with Biome
 - Initial release — 46 tools for Figma design system analysis, token extraction, accessibility auditing, and read/write operations via the Desktop Bridge plugin.
 
 ---
-**Built by Design Lazyyy**
+
+## 📄 License
+
+[MIT](https://opensource.org/licenses/MIT) © Design Lazyyy
+
+<div align="center">
+
+**Built with ❤️ by Design Lazyyy**
+
+</div>
