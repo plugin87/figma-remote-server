@@ -15,9 +15,9 @@ export function registerWriteTools(
   // ---- figma_execute ----
   server.tool(
     "figma_execute",
-    "Execute arbitrary Figma Plugin API JavaScript code in the plugin context. The code runs inside the Figma plugin sandbox with access to figma.* APIs. Use for operations not covered by other tools.",
+    "Execute arbitrary Figma Plugin API JavaScript code in the plugin context. The code runs inside the Figma plugin sandbox with access to figma.* APIs. Use for operations not covered by other tools.\n\nIMPORTANT: The code is evaluated with new Function() in an ES5-only parser. You MUST write ES5-compatible JavaScript only — NO arrow functions, template literals, const/let, destructuring, spread, async/await, classes, or shorthand object methods. Use var, function expressions, string concatenation with '+', and .then() for promises. Modern syntax throws 'expecting ;' errors.",
     {
-      code: z.string().describe("JavaScript code to execute in Figma plugin context"),
+      code: z.string().describe("ES5-only JavaScript to execute in the Figma plugin context. Use var (not const/let), function(){} (not =>), '+' concatenation (not `${}`), and .then() (not async/await). The figma global is available. Return a value or a Promise."),
       timeout: z.number().optional().describe("Execution timeout in ms. Default: 5000"),
     },
     async (args) => {
